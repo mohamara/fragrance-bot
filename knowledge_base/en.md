@@ -207,3 +207,26 @@ Base Notes: Sandalwood
 Scent: A sweet, floral fragrance with a warm, herbal heart and a smooth sandalwood base.
 Ideal for: Those who enjoy soft, sweet florals with a comforting, woodsy finish.
  
+REDWOOD
+ Type: Warm and Bitter | Group: Oriental
+ Top Notes: Mandarin, Bergamot
+ Middle Notes: Cardamom, Jasmine, Spicy Notes
+ Base Notes: Leather, Balsamic Notes, Ambergris
+ Scent: A deep, warm oriental fragrance with spicy nuances and a strong leather base that feels controlled and confident.
+ Ideal for: Men who prefer classic, serious scents with a refined and authoritative character.
+
+TAIGA
+ Type: Warm and Bitter | Group: Woody (Mediterranean)
+ Top Notes: Grapefruit, Peach
+ Middle Notes: Lily of the Valley (Snowdrop)
+ Base Notes: Musk, Patchouli, Sandalwood
+ Scent: A clean, natural woody fragrance with a fresh opening and a smooth, earthy dry-down.
+ Ideal for: Those who enjoy calm, minimal and modern woody scents with a natural feel.
+
+EL NIDO
+ Type: Warm | Group: Woody and Oriental
+ Top Notes: Bergamot, Pepper
+ Middle Notes: Woody Notes, Amber, Olive Leaf
+ Base Notes: Musk, Tonka Bean, Vetiver
+ Scent: A warm, woody oriental fragrance with spicy accents and a rich, grounded character.
+ Ideal for: Men who are drawn to distinctive, mature scents with depth and personality.
