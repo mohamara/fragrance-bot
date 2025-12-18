@@ -20,6 +20,50 @@ class AIService {
       const profile = database.getProfile(userId);
       const profileContext = profile?.context || '';
 
+      // Get user's perfumes
+      const userPerfumes = database.getUserPerfumes(userId);
+      
+      // Get excluded perfumes (perfumes user doesn't want to consider)
+      const excludedPerfumes = database.getExcludedPerfumes(userId) || [];
+      
+      // Check if user wants to exclude a perfume in this message
+      const excludePatterns = [
+        /(?:این|اون)\s*(?:عطر|عطرها)\s*(?:رو|را)\s*(?:در\s*نظر\s*نگیر|نادیده\s*بگیر|حذف\s*کن)/i,
+        /(?:در\s*نظر\s*نگیر|نادیده\s*بگیر|حذف\s*کن)\s*(?:این|اون)\s*(?:عطر|عطرها)/i,
+        /(?:نمی‌خوام|نمی‌خواهم)\s*(?:این|اون)\s*(?:عطر|عطرها)\s*(?:رو|را)/i,
+        /(?:بدون|بدون\s*در\s*نظر\s*گرفتن)\s*(?:این|اون)\s*(?:عطر|عطرها)/i
+      ];
+      
+      let shouldExcludePerfume = false;
+      let perfumeToExclude = null;
+      
+      // Check if user wants to exclude a perfume
+      for (const pattern of excludePatterns) {
+        if (pattern.test(userMessage)) {
+          shouldExcludePerfume = true;
+          // Try to extract perfume name from message
+          const perfumeMatch = userMessage.match(/\*\*([^*]+)\*\*/); // Match **perfume name**
+          if (perfumeMatch) {
+            perfumeToExclude = perfumeMatch[1].trim();
+          } else {
+            // Try to find perfume name from user's perfumes list
+            for (const perfume of userPerfumes) {
+              if (userMessage.includes(perfume)) {
+                perfumeToExclude = perfume;
+                break;
+              }
+            }
+          }
+          break;
+        }
+      }
+      
+      // If user wants to exclude a perfume, add it to excluded list
+      if (shouldExcludePerfume && perfumeToExclude) {
+        database.addExcludedPerfume(userId, perfumeToExclude);
+        excludedPerfumes.push(perfumeToExclude);
+      }
+
       // Get chat history
       const chatHistory = database.getChatHistory(userId, 10);
       
@@ -31,13 +75,36 @@ class AIService {
           knowledgeContext = `\n\n📚 پایگاه دانش کامل - تمام اطلاعات عطرهای موجود:\n${allContent}\n`;
         }
       }
+      
+      // Build user perfumes context
+      let userPerfumesContext = '';
+      if (userPerfumes.length > 0) {
+        const availablePerfumes = userPerfumes.filter(p => !excludedPerfumes.includes(p));
+        if (availablePerfumes.length > 0) {
+          userPerfumesContext = `\n\n🌹 *عطرهای موجود کاربر (حتماً در مشاوره در نظر بگیر):*\n`;
+          userPerfumesContext += availablePerfumes.map(p => `- **${p}**`).join('\n');
+          userPerfumesContext += `\n\n⚠️ *مهم:* این عطرها را کاربر در اختیار دارد و حتماً باید در مشاوره‌ها و پیشنهادات در نظر گرفته شوند. می‌توانی از این عطرها برای ترکیب‌سازی یا پیشنهاد مستقیم استفاده کنی.`;
+        }
+      }
+      
+      // Build excluded perfumes context
+      let excludedPerfumesContext = '';
+      if (excludedPerfumes.length > 0) {
+        excludedPerfumesContext = `\n\n❌ *عطرهای حذف شده (در مشاوره در نظر نگیر):*\n`;
+        excludedPerfumesContext += excludedPerfumes.map(p => `- **${p}**`).join('\n');
+        excludedPerfumesContext += `\n\n⚠️ *مهم:* این عطرها را کاربر نمی‌خواهد در مشاوره در نظر گرفته شوند. هرگز این عطرها را پیشنهاد نده یا در ترکیب‌ها استفاده نکن.`;
+      }
 
       // Build system prompt for perfume consultant
       const systemPrompt = `تو برترین مشاور در حوزه عطر و اسانس در دنیا هستی که میتوانی با طبعی شاعرانه و قدرت کلام بالا و با توجه به شخصیت هر کس و نوع زندگی و کار و درخواست او از عطر برترین مشاوره ها رو در انتخاب و ترکیب عطر ها بدی.
 
 ${knowledgeContext ? `\n📚 عطرهای موجود در مجموعه:\n${knowledgeContext}\n` : ''}
+${userPerfumesContext}
+${excludedPerfumesContext}
 
 دستورالعمل‌های مهم:
+${userPerfumes.length > 0 && userPerfumes.filter(p => !excludedPerfumes.includes(p)).length > 0 ? '- **خیلی مهم:** کاربر عطرهایی دارد که در بخش "عطرهای من" ثبت کرده. حتماً این عطرها را در مشاوره‌ها و پیشنهادات در نظر بگیر. می‌توانی از این عطرها برای ترکیب‌سازی یا پیشنهاد مستقیم استفاده کنی. این عطرها اولویت دارند.' : ''}
+${excludedPerfumes.length > 0 ? '- **خیلی مهم:** کاربر عطرهایی را مشخص کرده که نمی‌خواهد در مشاوره در نظر گرفته شوند. هرگز این عطرها را پیشنهاد نده یا در ترکیب‌ها استفاده نکن.' : ''}
 - عطرها محدود به مستنداتی هستند که برایت فرستاده شده، ولی در مشاوره می‌توانی به بوهای طبیعی و ترکیبشان با عطرهای موجود ارجاع بدی
 - از هر کس سوالاتی بپرس که دانشت رو نسبت بهش و درخواستش قوی‌تر کنی و پاسخ درست بدی در صورت نیاز
 - در ترکیب‌سازی طوری رفتار کن که با عطرهای موجود خروجی مناسب بگیری. مثلاً: "عطر این رو بزن بعد ۲ ساعت دقیقا روی همون این یکی عطر رو بزن" یا "اول یک پاف از این ۳ پاف از اون"

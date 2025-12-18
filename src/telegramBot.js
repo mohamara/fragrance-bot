@@ -283,6 +283,7 @@ class TelegramBotService {
       
       // Get user's current perfumes
       const userPerfumes = database.getUserPerfumes(userId)
+      const excludedPerfumes = database.getExcludedPerfumes(userId)
       
       // Get all available perfumes
       const allPerfumes = knowledgeBase.getPerfumeTitles()
@@ -296,19 +297,35 @@ class TelegramBotService {
       }
 
       // Create inline keyboard with perfume buttons
-      const keyboard = this.createPerfumeKeyboard(allPerfumes, userPerfumes)
+      const keyboard = this.createPerfumeKeyboard(allPerfumes, userPerfumes, excludedPerfumes)
       
       let message = `🌸 *عطرهای من*\n\n`
       if (userPerfumes.length > 0) {
-        message += `*عطرهای انتخاب شده:*\n`
-        userPerfumes.forEach((perfume, index) => {
-          message += `${index + 1}. **${perfume}**\n`
-        })
-        message += `\n`
+        const availablePerfumes = userPerfumes.filter(p => !excludedPerfumes.includes(p))
+        const excluded = userPerfumes.filter(p => excludedPerfumes.includes(p))
+        
+        if (availablePerfumes.length > 0) {
+          message += `*عطرهای موجود (در مشاوره در نظر گرفته می‌شوند):*\n`
+          availablePerfumes.forEach((perfume, index) => {
+            message += `${index + 1}. **${perfume}** ✅\n`
+          })
+          message += `\n`
+        }
+        
+        if (excluded.length > 0) {
+          message += `*عطرهای حذف شده (در مشاوره در نظر گرفته نمی‌شوند):*\n`
+          excluded.forEach((perfume, index) => {
+            message += `${index + 1}. **${perfume}** ❌\n`
+          })
+          message += `\n`
+        }
       } else {
         message += `هنوز عطری انتخاب نکردی.\n\n`
       }
-      message += `برای اضافه یا حذف کردن عطر، دکمه مربوطه رو بزن:`
+      message += `💡 *راهنما:*\n`
+      message += `• برای اضافه/حذف عطر از لیست، دکمه مربوطه رو بزن\n`
+      message += `• برای exclude کردن عطر (در مشاوره در نظر گرفته نشود)، روی عطر بزن و بعد دکمه "❌ در نظر نگیر" رو بزن\n`
+      message += `• عطرهای exclude شده با ❌ نشان داده می‌شوند`
 
       await this.bot.sendMessage(msg.chat.id, message, {
         parse_mode: 'Markdown',
@@ -335,12 +352,14 @@ class TelegramBotService {
 
       // Handle perfume selection/deselection
       if (data.startsWith('perfume_')) {
-        const action = data.split('_')[1] // 'add' or 'remove'
+        const action = data.split('_')[1] // 'add', 'remove', 'exclude', 'unexclude'
         const perfumeName = data.substring(data.indexOf('_', data.indexOf('_') + 1) + 1) // Extract perfume name
 
         try {
           if (action === 'add') {
             const added = database.addUserPerfume(userId, perfumeName)
+            // Remove from excluded if it was excluded
+            database.removeExcludedPerfume(userId, perfumeName)
             if (added) {
               await this.bot.answerCallbackQuery(query.id, {
                 text: `✅ ${perfumeName} اضافه شد`,
@@ -354,6 +373,8 @@ class TelegramBotService {
             }
           } else if (action === 'remove') {
             const removed = database.removeUserPerfume(userId, perfumeName)
+            // Also remove from excluded
+            database.removeExcludedPerfume(userId, perfumeName)
             if (removed) {
               await this.bot.answerCallbackQuery(query.id, {
                 text: `✅ ${perfumeName} حذف شد`,
@@ -365,24 +386,77 @@ class TelegramBotService {
                 show_alert: false
               })
             }
+          } else if (action === 'exclude') {
+            // Add to excluded list (must be in user perfumes first)
+            const userPerfumes = database.getUserPerfumes(userId)
+            if (userPerfumes.includes(perfumeName)) {
+              const excluded = database.addExcludedPerfume(userId, perfumeName)
+              if (excluded) {
+                await this.bot.answerCallbackQuery(query.id, {
+                  text: `✅ ${perfumeName} از مشاوره حذف شد`,
+                  show_alert: false
+                })
+              } else {
+                await this.bot.answerCallbackQuery(query.id, {
+                  text: `⚠️ این عطر قبلاً حذف شده`,
+                  show_alert: false
+                })
+              }
+            } else {
+              await this.bot.answerCallbackQuery(query.id, {
+                text: `⚠️ ابتدا عطر را به لیست اضافه کن`,
+                show_alert: false
+              })
+            }
+          } else if (action === 'unexclude') {
+            // Remove from excluded list
+            const removed = database.removeExcludedPerfume(userId, perfumeName)
+            if (removed) {
+              await this.bot.answerCallbackQuery(query.id, {
+                text: `✅ ${perfumeName} دوباره در مشاوره در نظر گرفته می‌شود`,
+                show_alert: false
+              })
+            } else {
+              await this.bot.answerCallbackQuery(query.id, {
+                text: `⚠️ این عطر در لیست حذف شده نیست`,
+                show_alert: false
+              })
+            }
           }
 
           // Update the message with new keyboard state
           const userPerfumes = database.getUserPerfumes(userId)
+          const excludedPerfumes = database.getExcludedPerfumes(userId)
           const allPerfumes = knowledgeBase.getPerfumeTitles()
-          const keyboard = this.createPerfumeKeyboard(allPerfumes, userPerfumes)
+          const keyboard = this.createPerfumeKeyboard(allPerfumes, userPerfumes, excludedPerfumes)
 
           let message = `🌸 *عطرهای من*\n\n`
           if (userPerfumes.length > 0) {
-            message += `*عطرهای انتخاب شده:*\n`
-            userPerfumes.forEach((perfume, index) => {
-              message += `${index + 1}. **${perfume}**\n`
-            })
-            message += `\n`
+            const availablePerfumes = userPerfumes.filter(p => !excludedPerfumes.includes(p))
+            const excluded = userPerfumes.filter(p => excludedPerfumes.includes(p))
+            
+            if (availablePerfumes.length > 0) {
+              message += `*عطرهای موجود (در مشاوره در نظر گرفته می‌شوند):*\n`
+              availablePerfumes.forEach((perfume, index) => {
+                message += `${index + 1}. **${perfume}** ✅\n`
+              })
+              message += `\n`
+            }
+            
+            if (excluded.length > 0) {
+              message += `*عطرهای حذف شده (در مشاوره در نظر گرفته نمی‌شوند):*\n`
+              excluded.forEach((perfume, index) => {
+                message += `${index + 1}. **${perfume}** ❌\n`
+              })
+              message += `\n`
+            }
           } else {
             message += `هنوز عطری انتخاب نکردی.\n\n`
           }
-          message += `برای اضافه یا حذف کردن عطر، دکمه مربوطه رو بزن:`
+          message += `💡 *راهنما:*\n`
+          message += `• برای اضافه/حذف عطر از لیست، دکمه مربوطه رو بزن\n`
+          message += `• برای exclude کردن عطر (در مشاوره در نظر گرفته نشود)، روی عطر بزن و بعد دکمه "❌ در نظر نگیر" رو بزن\n`
+          message += `• عطرهای exclude شده با ❌ نشان داده می‌شوند`
 
           await this.bot.editMessageText(message, {
             chat_id: chatId,
@@ -425,6 +499,7 @@ class TelegramBotService {
           '🌸 عطرهای من': async () => {
             const userId = msg.from.id
             const userPerfumes = database.getUserPerfumes(userId)
+            const excludedPerfumes = database.getExcludedPerfumes(userId)
             const allPerfumes = knowledgeBase.getPerfumeTitles()
             
             if (allPerfumes.length === 0) {
@@ -435,18 +510,34 @@ class TelegramBotService {
               return
             }
 
-            const keyboard = this.createPerfumeKeyboard(allPerfumes, userPerfumes)
+            const keyboard = this.createPerfumeKeyboard(allPerfumes, userPerfumes, excludedPerfumes)
             let message = `🌸 *عطرهای من*\n\n`
             if (userPerfumes.length > 0) {
-              message += `*عطرهای انتخاب شده:*\n`
-              userPerfumes.forEach((perfume, index) => {
-                message += `${index + 1}. **${perfume}**\n`
-              })
-              message += `\n`
+              const availablePerfumes = userPerfumes.filter(p => !excludedPerfumes.includes(p))
+              const excluded = userPerfumes.filter(p => excludedPerfumes.includes(p))
+              
+              if (availablePerfumes.length > 0) {
+                message += `*عطرهای موجود (در مشاوره در نظر گرفته می‌شوند):*\n`
+                availablePerfumes.forEach((perfume, index) => {
+                  message += `${index + 1}. **${perfume}** ✅\n`
+                })
+                message += `\n`
+              }
+              
+              if (excluded.length > 0) {
+                message += `*عطرهای حذف شده (در مشاوره در نظر گرفته نمی‌شوند):*\n`
+                excluded.forEach((perfume, index) => {
+                  message += `${index + 1}. **${perfume}** ❌\n`
+                })
+                message += `\n`
+              }
             } else {
               message += `هنوز عطری انتخاب نکردی.\n\n`
             }
-            message += `برای اضافه یا حذف کردن عطر، دکمه مربوطه رو بزن:`
+            message += `💡 *راهنما:*\n`
+            message += `• برای اضافه/حذف عطر از لیست، دکمه مربوطه رو بزن\n`
+            message += `• برای exclude کردن عطر (در مشاوره در نظر گرفته نشود)، روی عطر بزن و بعد دکمه "❌ در نظر نگیر" رو بزن\n`
+            message += `• عطرهای exclude شده با ❌ نشان داده می‌شوند`
 
             await this.bot.sendMessage(msg.chat.id, message, {
               parse_mode: 'Markdown',
@@ -802,7 +893,7 @@ class TelegramBotService {
     }
   }
 
-  createPerfumeKeyboard(allPerfumes, userPerfumes) {
+  createPerfumeKeyboard(allPerfumes, userPerfumes, excludedPerfumes = []) {
     const keyboard = []
     const buttonsPerRow = 2 // 2 buttons per row
     
@@ -811,8 +902,19 @@ class TelegramBotService {
       for (let j = 0; j < buttonsPerRow && i + j < allPerfumes.length; j++) {
         const perfume = allPerfumes[i + j]
         const isSelected = userPerfumes.includes(perfume)
-        const emoji = isSelected ? '✅' : '➕'
-        const action = isSelected ? 'remove' : 'add'
+        const isExcluded = excludedPerfumes.includes(perfume)
+        
+        let emoji, action
+        if (isExcluded) {
+          emoji = '❌'
+          action = 'unexclude'
+        } else if (isSelected) {
+          emoji = '✅'
+          action = 'remove'
+        } else {
+          emoji = '➕'
+          action = 'add'
+        }
         
         row.push({
           text: `${emoji} ${perfume}`,

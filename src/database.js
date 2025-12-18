@@ -300,6 +300,60 @@ class DatabaseManager {
     return profile?.preferences?.wizard || null;
   }
 
+  // Get excluded perfumes (perfumes user doesn't want to consider)
+  getExcludedPerfumes(userId) {
+    const profile = this.getProfile(userId);
+    return profile?.preferences?.excludedPerfumes || [];
+  }
+
+  // Add perfume to excluded list
+  addExcludedPerfume(userId, perfumeName) {
+    const profile = this.getProfile(userId);
+    const preferences = profile?.preferences || {};
+    const excludedPerfumes = preferences.excludedPerfumes || [];
+    
+    // Add perfume if not already exists
+    if (!excludedPerfumes.includes(perfumeName)) {
+      excludedPerfumes.push(perfumeName);
+      preferences.excludedPerfumes = excludedPerfumes;
+      
+      const existingProfile = this.getProfile(userId);
+      this.createOrUpdateProfile(
+        userId,
+        preferences,
+        existingProfile?.context || '',
+        existingProfile?.metadata || {}
+      );
+      
+      return true;
+    }
+    return false;
+  }
+
+  // Remove perfume from excluded list
+  removeExcludedPerfume(userId, perfumeName) {
+    const profile = this.getProfile(userId);
+    const preferences = profile?.preferences || {};
+    const excludedPerfumes = preferences.excludedPerfumes || [];
+    
+    const index = excludedPerfumes.indexOf(perfumeName);
+    if (index > -1) {
+      excludedPerfumes.splice(index, 1);
+      preferences.excludedPerfumes = excludedPerfumes;
+      
+      const existingProfile = this.getProfile(userId);
+      this.createOrUpdateProfile(
+        userId,
+        preferences,
+        existingProfile?.context || '',
+        existingProfile?.metadata || {}
+      );
+      
+      return true;
+    }
+    return false;
+  }
+
   close() {
     this.db.close();
   }
