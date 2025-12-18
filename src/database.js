@@ -271,6 +271,35 @@ class DatabaseManager {
     return profile?.preferences?.perfumes || [];
   }
 
+  // Save wizard data (age, gender, interests)
+  saveWizardData(userId, wizardData) {
+    const profile = this.getProfile(userId);
+    const preferences = profile?.preferences || {};
+    
+    // Save wizard data in preferences
+    preferences.wizard = {
+      age: wizardData.age,
+      gender: wizardData.gender,
+      interests: wizardData.interests,
+      completedAt: new Date().toISOString()
+    };
+
+    // Update profile with wizard data
+    const existingProfile = this.getProfile(userId);
+    this.createOrUpdateProfile(
+      userId,
+      preferences,
+      existingProfile?.context || '',
+      existingProfile?.metadata || {}
+    );
+  }
+
+  // Get wizard data
+  getWizardData(userId) {
+    const profile = this.getProfile(userId);
+    return profile?.preferences?.wizard || null;
+  }
+
   close() {
     this.db.close();
   }
