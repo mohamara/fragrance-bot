@@ -350,6 +350,15 @@ class TelegramBotService {
         return
       }
 
+      // Handle separator (do nothing)
+      if (data === 'separator') {
+        await this.bot.answerCallbackQuery(query.id, {
+          text: '',
+          show_alert: false
+        })
+        return
+      }
+
       // Handle perfume selection/deselection
       if (data.startsWith('perfume_')) {
         const action = data.split('_')[1] // 'add', 'remove', 'exclude', 'unexclude'
@@ -906,12 +915,15 @@ class TelegramBotService {
         
         let emoji, action
         if (isExcluded) {
+          // Excluded perfume - show unexclude option
           emoji = '❌'
           action = 'unexclude'
         } else if (isSelected) {
+          // Perfume is in user's list but not excluded - show remove option
           emoji = '✅'
           action = 'remove'
         } else {
+          // Perfume is not in user's list - show add option
           emoji = '➕'
           action = 'add'
         }
@@ -922,6 +934,31 @@ class TelegramBotService {
         })
       }
       keyboard.push(row)
+    }
+    
+    // Add a separator and exclude/unexclude buttons for user's perfumes
+    if (userPerfumes.length > 0) {
+      keyboard.push([{ text: '━━━━━━━━━━━━━━━━', callback_data: 'separator' }])
+      
+      // Add exclude/unexclude buttons for each user perfume
+      userPerfumes.forEach((perfume) => {
+        const isExcluded = excludedPerfumes.includes(perfume)
+        const row = []
+        
+        if (isExcluded) {
+          row.push({
+            text: `🔄 فعال کردن: ${perfume}`,
+            callback_data: `perfume_unexclude_${perfume}`
+          })
+        } else {
+          row.push({
+            text: `🚫 در نظر نگیر: ${perfume}`,
+            callback_data: `perfume_exclude_${perfume}`
+          })
+        }
+        
+        keyboard.push(row)
+      })
     }
     
     return keyboard
