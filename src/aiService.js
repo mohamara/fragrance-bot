@@ -20,6 +20,9 @@ class AIService {
       const profile = database.getProfile(userId);
       const profileContext = profile?.context || '';
 
+      // Get wizard data (age, gender, interests)
+      const wizardData = database.getWizardData(userId);
+
       // Get user's perfumes
       const userPerfumes = database.getUserPerfumes(userId);
       
@@ -95,14 +98,95 @@ class AIService {
         excludedPerfumesContext += `\n\n⚠️ *مهم:* این عطرها را کاربر نمی‌خواهد در مشاوره در نظر گرفته شوند. هرگز این عطرها را پیشنهاد نده یا در ترکیب‌ها استفاده نکن.`;
       }
 
+      // Build wizard data context (age, gender, interests)
+      let wizardDataContext = '';
+      if (wizardData) {
+        const genderNames = {
+          'male': 'مرد',
+          'female': 'زن',
+          'other': 'ترجیح می‌دهم نگویم'
+        };
+        const interestNames = {
+          'warm': '🔥 گرم',
+          'cool': '❄️ خنک',
+          'sweet': '🍯 شیرین',
+          'bitter': '☕ تلخ',
+          'spicy': '🌶️ تند',
+          'mild': '🌿 ملایم',
+          'woody': '🪵 چوبی',
+          'floral': '🌺 گلی',
+          'fresh': '🍃 تازه',
+          'oriental': '🕌 شرقی',
+          'citrus': '🍊 مرکبات',
+          'vanilla': '🌰 وانیلی'
+        };
+
+        wizardDataContext = `\n\n👤 *اطلاعات پروفایل کاربر (حتماً در مشاوره اعمال کن):*\n`;
+        wizardDataContext += `🔢 *بازه سنی:* ${wizardData.age} سال\n`;
+        wizardDataContext += `👤 *جنسیت:* ${genderNames[wizardData.gender]}\n`;
+        
+        if (wizardData.interests && wizardData.interests.length > 0) {
+          wizardDataContext += `👃 *ذائقه بویایی:*\n`;
+          wizardData.interests.forEach(interestId => {
+            wizardDataContext += `   ${interestNames[interestId]}\n`;
+          });
+        }
+
+        const workTypeNames = {
+          'athlete': '🏃 ورزشکار',
+          'manager': '👔 مدیر',
+          'employee': '💼 کارمند',
+          'government': '🏛️ دولتی',
+          'private': '🏢 خصوصی',
+          'freelancer': '💻 فریلنسر',
+          'student': '🎓 دانشجو',
+          'teacher': '📚 معلم',
+          'doctor': '⚕️ پزشک',
+          'artist': '🎨 هنرمند',
+          'entrepreneur': '🚀 کارآفرین',
+          'merchant': '💼 تاجر',
+          'marketer': '📊 بازاری',
+          'architect': '🏗️ معمار',
+          'goldsmith': '💎 طلا فروش',
+          'other': '🔷 سایر'
+        };
+
+        if (wizardData.workType) {
+          wizardDataContext += `💼 *تیپ شخصیت کاری:* ${workTypeNames[wizardData.workType]}\n`;
+        }
+
+        wizardDataContext += `\n⚠️ *خیلی مهم:* این اطلاعات را حتماً در مشاوره‌ها و پیشنهادات در نظر بگیر:\n`;
+        wizardDataContext += `- سن کاربر: ${wizardData.age} سال - عطرهای مناسب این بازه سنی را پیشنهاد بده\n`;
+        wizardDataContext += `- جنسیت: ${genderNames[wizardData.gender]} - عطرهای متناسب با این جنسیت را در نظر بگیر\n`;
+        if (wizardData.interests && wizardData.interests.length > 0) {
+          wizardDataContext += `- ذائقه بویایی: ${wizardData.interests.map(id => interestNames[id]).join('، ')} - عطرهایی که با این ذائقه‌های بویایی هماهنگ هستند را پیشنهاد بده. این ذائقه‌ها نشان می‌دهد کاربر چه نوع بوهایی را دوست دارد (گرم، سرد، شیرین، تلخ، تند، ملایم، چوبی، گلی، تازه، شرقی، مرکبات، وانیلی)\n`;
+        }
+        if (wizardData.workType) {
+          wizardDataContext += `- تیپ شخصیت کاری: ${workTypeNames[wizardData.workType]} - عطرهایی را پیشنهاد بده که با این تیپ شخصیت کاری هماهنگ باشند. برای مثال:\n`;
+          wizardDataContext += `  • ورزشکار: عطرهای تازه و انرژی‌بخش\n`;
+          wizardDataContext += `  • مدیر/کارمند: عطرهای حرفه‌ای و ملایم\n`;
+          wizardDataContext += `  • دولتی/خصوصی: عطرهای رسمی و مناسب محیط کار\n`;
+          wizardDataContext += `  • فریلنسر/کارآفرین: عطرهای منحصر به فرد و خلاقانه\n`;
+          wizardDataContext += `  • دانشجو/معلم: عطرهای جوان و شاداب\n`;
+          wizardDataContext += `  • پزشک: عطرهای ملایم و غیر مزاحم\n`;
+          wizardDataContext += `  • هنرمند: عطرهای خلاقانه و منحصر به فرد\n`;
+          wizardDataContext += `  • تاجر/بازاری: عطرهای اعتماد‌بخش و حرفه‌ای\n`;
+          wizardDataContext += `  • معمار: عطرهای خلاقانه و مدرن\n`;
+          wizardDataContext += `  • طلا فروش: عطرهای لوکس و گران‌بها\n`;
+        }
+        wizardDataContext += `- این اطلاعات را در توصیفات و پیشنهادات خود اعمال کن و عطرهایی را پیشنهاد بده که با سن، جنسیت، ذائقه بویایی و تیپ شخصیت کاری کاربر هماهنگ باشند`;
+      }
+
       // Build system prompt for perfume consultant
       const systemPrompt = `تو برترین مشاور در حوزه عطر و اسانس در دنیا هستی که میتوانی با طبعی شاعرانه و قدرت کلام بالا و با توجه به شخصیت هر کس و نوع زندگی و کار و درخواست او از عطر برترین مشاوره ها رو در انتخاب و ترکیب عطر ها بدی.
 
 ${knowledgeContext ? `\n📚 عطرهای موجود در مجموعه:\n${knowledgeContext}\n` : ''}
 ${userPerfumesContext}
 ${excludedPerfumesContext}
+${wizardDataContext}
 
 دستورالعمل‌های مهم:
+${wizardData ? '- **خیلی مهم:** کاربر اطلاعات پروفایل (سن، جنسیت، علاقه‌مندی‌ها) را تکمیل کرده. حتماً این اطلاعات را در تمام مشاوره‌ها و پیشنهادات اعمال کن. عطرهایی را پیشنهاد بده که با سن، جنسیت و علاقه‌مندی‌های کاربر هماهنگ باشند.' : ''}
 ${userPerfumes.length > 0 && userPerfumes.filter(p => !excludedPerfumes.includes(p)).length > 0 ? '- **خیلی مهم:** کاربر عطرهایی دارد که در بخش "عطرهای من" ثبت کرده. حتماً این عطرها را در مشاوره‌ها و پیشنهادات در نظر بگیر. می‌توانی از این عطرها برای ترکیب‌سازی یا پیشنهاد مستقیم استفاده کنی. این عطرها اولویت دارند.' : ''}
 ${excludedPerfumes.length > 0 ? '- **خیلی مهم:** کاربر عطرهایی را مشخص کرده که نمی‌خواهد در مشاوره در نظر گرفته شوند. هرگز این عطرها را پیشنهاد نده یا در ترکیب‌ها استفاده نکن.' : ''}
 - عطرها محدود به مستنداتی هستند که برایت فرستاده شده، ولی در مشاوره می‌توانی به بوهای طبیعی و ترکیبشان با عطرهای موجود ارجاع بدی

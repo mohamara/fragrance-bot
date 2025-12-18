@@ -205,26 +205,51 @@ class TelegramBotService {
           'other': 'ترجیح می‌دهم نگویم'
         }
         const interestNames = {
-          'sports': '⚽ ورزش',
-          'music': '🎵 موسیقی',
-          'travel': '✈️ سفر',
-          'art': '🎨 هنر',
-          'technology': '💻 تکنولوژی',
-          'nature': '🌳 طبیعت',
-          'fashion': '👗 مد و فشن',
-          'books': '📚 کتاب و مطالعه',
-          'cinema': '🎬 سینما و فیلم',
-          'cooking': '🍳 آشپزی'
+          'warm': '🔥 گرم',
+          'cool': '❄️ خنک',
+          'sweet': '🍯 شیرین',
+          'bitter': '☕ تلخ',
+          'spicy': '🌶️ تند',
+          'mild': '🌿 ملایم',
+          'woody': '🪵 چوبی',
+          'floral': '🌺 گلی',
+          'fresh': '🍃 تازه',
+          'oriental': '🕌 شرقی',
+          'citrus': '🍊 مرکبات',
+          'vanilla': '🌰 وانیلی'
         }
 
         profileMessage += `\n📋 *اطلاعات پروفایل:*\n`
         profileMessage += `   🔢 *سن:* ${wizardData.age} سال\n`
         profileMessage += `   👤 *جنسیت:* ${genderNames[wizardData.gender]}\n`
         if (wizardData.interests && wizardData.interests.length > 0) {
-          profileMessage += `   🎯 *علاقه‌مندی‌ها:*\n`
+          profileMessage += `   👃 *ذائقه بویایی:*\n`
           wizardData.interests.forEach(interestId => {
             profileMessage += `      ${interestNames[interestId]}\n`
           })
+        }
+        
+        const workTypeNames = {
+          'athlete': '🏃 ورزشکار',
+          'manager': '👔 مدیر',
+          'employee': '💼 کارمند',
+          'government': '🏛️ دولتی',
+          'private': '🏢 خصوصی',
+          'freelancer': '💻 فریلنسر',
+          'student': '🎓 دانشجو',
+          'teacher': '📚 معلم',
+          'doctor': '⚕️ پزشک',
+          'artist': '🎨 هنرمند',
+          'entrepreneur': '🚀 کارآفرین',
+          'merchant': '💼 تاجر',
+          'marketer': '📊 بازاری',
+          'architect': '🏗️ معمار',
+          'goldsmith': '💎 طلا فروش',
+          'other': '🔷 سایر'
+        }
+        
+        if (wizardData.workType) {
+          profileMessage += `   💼 *تیپ شخصیت کاری:* ${workTypeNames[wizardData.workType]}\n`
         }
       } else {
         profileMessage += `\n💡 *نکته:* برای دریافت پیشنهادات بهتر، پروفایل خود را تکمیل کن!\n`
@@ -576,26 +601,51 @@ class TelegramBotService {
                 'other': 'ترجیح می‌دهم نگویم'
               }
               const interestNames = {
-                'sports': '⚽ ورزش',
-                'music': '🎵 موسیقی',
-                'travel': '✈️ سفر',
-                'art': '🎨 هنر',
-                'technology': '💻 تکنولوژی',
-                'nature': '🌳 طبیعت',
-                'fashion': '👗 مد و فشن',
-                'books': '📚 کتاب و مطالعه',
-                'cinema': '🎬 سینما و فیلم',
-                'cooking': '🍳 آشپزی'
+                'warm': '🔥 گرم',
+                'cool': '❄️ خنک',
+                'sweet': '🍯 شیرین',
+                'bitter': '☕ تلخ',
+                'spicy': '🌶️ تند',
+                'mild': '🌿 ملایم',
+                'woody': '🪵 چوبی',
+                'floral': '🌺 گلی',
+                'fresh': '🍃 تازه',
+                'oriental': '🕌 شرقی',
+                'citrus': '🍊 مرکبات',
+                'vanilla': '🌰 وانیلی'
               }
 
               profileMessage += `\n📋 *اطلاعات پروفایل:*\n`
               profileMessage += `   🔢 *سن:* ${wizardData.age} سال\n`
               profileMessage += `   👤 *جنسیت:* ${genderNames[wizardData.gender]}\n`
               if (wizardData.interests && wizardData.interests.length > 0) {
-                profileMessage += `   🎯 *علاقه‌مندی‌ها:*\n`
+                profileMessage += `   👃 *ذائقه بویایی:*\n`
                 wizardData.interests.forEach(interestId => {
                   profileMessage += `      ${interestNames[interestId]}\n`
                 })
+              }
+              
+              const workTypeNames = {
+                'athlete': '🏃 ورزشکار',
+                'manager': '👔 مدیر',
+                'employee': '💼 کارمند',
+                'government': '🏛️ دولتی',
+                'private': '🏢 خصوصی',
+                'freelancer': '💻 فریلنسر',
+                'student': '🎓 دانشجو',
+                'teacher': '📚 معلم',
+                'doctor': '⚕️ پزشک',
+                'artist': '🎨 هنرمند',
+                'entrepreneur': '🚀 کارآفرین',
+                'merchant': '💼 تاجر',
+                'marketer': '📊 بازاری',
+                'architect': '🏗️ معمار',
+                'goldsmith': '💎 طلا فروش',
+                'other': '🔷 سایر'
+              }
+              
+              if (wizardData.workType) {
+                profileMessage += `   💼 *تیپ شخصیت کاری:* ${workTypeNames[wizardData.workType]}\n`
               }
             } else {
               profileMessage += `\n💡 *نکته:* برای دریافت پیشنهادات بهتر، پروفایل خود را تکمیل کن!\n`
@@ -1026,7 +1076,8 @@ class TelegramBotService {
       data: {
         age: null,
         gender: null,
-        interests: []
+        interests: [],
+        workType: null
       }
     })
 
@@ -1053,6 +1104,9 @@ class TelegramBotService {
       case 'interests':
         await this.showInterestsStep(chatId, wizardState.data.interests)
         break
+      case 'workType':
+        await this.showWorkTypeStep(chatId)
+        break
       case 'complete':
         await this.completeWizard(userId, chatId, wizardState.data)
         break
@@ -1060,7 +1114,7 @@ class TelegramBotService {
   }
 
   async showAgeStep(chatId) {
-    const message = `🌸 *مرحله ۱ از ۳: سن شما*
+    const message = `🌸 *مرحله ۱ از ۴: سن شما*
 
 لطفاً بازه سنی خود را انتخاب کنید:`
 
@@ -1091,7 +1145,7 @@ class TelegramBotService {
   }
 
   async showGenderStep(chatId) {
-    const message = `🌸 *مرحله ۲ از ۳: جنسیت*
+    const message = `🌸 *مرحله ۲ از ۴: جنسیت*
 
 لطفاً جنسیت خود را انتخاب کنید:`
 
@@ -1115,23 +1169,25 @@ class TelegramBotService {
 
   async showInterestsStep(chatId, selectedInterests) {
     const interests = [
-      { id: 'sports', name: '⚽ ورزش', emoji: '⚽' },
-      { id: 'music', name: '🎵 موسیقی', emoji: '🎵' },
-      { id: 'travel', name: '✈️ سفر', emoji: '✈️' },
-      { id: 'art', name: '🎨 هنر', emoji: '🎨' },
-      { id: 'technology', name: '💻 تکنولوژی', emoji: '💻' },
-      { id: 'nature', name: '🌳 طبیعت', emoji: '🌳' },
-      { id: 'fashion', name: '👗 مد و فشن', emoji: '👗' },
-      { id: 'books', name: '📚 کتاب و مطالعه', emoji: '📚' },
-      { id: 'cinema', name: '🎬 سینما و فیلم', emoji: '🎬' },
-      { id: 'cooking', name: '🍳 آشپزی', emoji: '🍳' }
+      { id: 'warm', name: '🔥 گرم', emoji: '🔥', description: 'عطرهای گرم و دلنشین' },
+      { id: 'cool', name: '❄️ خنک', emoji: '❄️', description: 'عطرهای خنک و تازه' },
+      { id: 'sweet', name: '🍯 شیرین', emoji: '🍯', description: 'عطرهای شیرین و ملایم' },
+      { id: 'bitter', name: '☕ تلخ', emoji: '☕', description: 'عطرهای تلخ و عمیق' },
+      { id: 'spicy', name: '🌶️ تند', emoji: '🌶️', description: 'عطرهای تند و ادویه‌ای' },
+      { id: 'mild', name: '🌿 ملایم', emoji: '🌿', description: 'عطرهای ملایم و نرم' },
+      { id: 'woody', name: '🪵 چوبی', emoji: '🪵', description: 'عطرهای چوبی و زمینی' },
+      { id: 'floral', name: '🌺 گلی', emoji: '🌺', description: 'عطرهای گلی و رمانتیک' },
+      { id: 'fresh', name: '🍃 تازه', emoji: '🍃', description: 'عطرهای تازه و سبز' },
+      { id: 'oriental', name: '🕌 شرقی', emoji: '🕌', description: 'عطرهای شرقی و گرم' },
+      { id: 'citrus', name: '🍊 مرکبات', emoji: '🍊', description: 'عطرهای مرکباتی و انرژی‌بخش' },
+      { id: 'vanilla', name: '🌰 وانیلی', emoji: '🌰', description: 'عطرهای وانیلی و کرمی' }
     ]
 
-    const message = `🌸 *مرحله ۳ از ۳: علاقه‌مندی‌ها*
+    const message = `🌸 *مرحله ۳ از ۴: ذائقه بویایی*
 
-لطفاً علاقه‌مندی‌های خود را انتخاب کنید (می‌تونی چند تا انتخاب کنی):
+لطفاً ذائقه بویایی خود را انتخاب کنید (می‌تونی چند تا انتخاب کنی):
 
-${selectedInterests.length > 0 ? `*انتخاب شده:* ${selectedInterests.map(i => interests.find(int => int.id === i)?.emoji || '').join(' ')}\n\n` : ''}بعد از انتخاب علاقه‌مندی‌ها، دکمه "✅ تکمیل" را بزن.`
+${selectedInterests.length > 0 ? `*انتخاب شده:* ${selectedInterests.map(i => interests.find(int => int.id === i)?.emoji || '').join(' ')}\n\n` : ''}بعد از انتخاب ذائقه‌های بویایی، دکمه "➡️ بعدی" را بزن.`
 
     const keyboard = {
       inline_keyboard: []
@@ -1152,10 +1208,58 @@ ${selectedInterests.length > 0 ? `*انتخاب شده:* ${selectedInterests.map
       keyboard.inline_keyboard.push(row)
     }
 
-    // Add complete button
+    // Add next button
     keyboard.inline_keyboard.push([
-      { text: '✅ تکمیل و ذخیره', callback_data: 'wizard_complete' }
+      { text: '➡️ بعدی', callback_data: 'wizard_interests_next' }
     ])
+
+    await this.bot.sendMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    })
+  }
+
+  async showWorkTypeStep(chatId) {
+    const message = `🌸 *مرحله ۴ از ۴: تیپ شخصیت کاری*
+
+لطفاً تیپ شخصیت کاری خود را انتخاب کنید:`
+
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '🏃 ورزشکار', callback_data: 'wizard_worktype_athlete' },
+          { text: '👔 مدیر', callback_data: 'wizard_worktype_manager' }
+        ],
+        [
+          { text: '💼 کارمند', callback_data: 'wizard_worktype_employee' },
+          { text: '🏛️ دولتی', callback_data: 'wizard_worktype_government' }
+        ],
+        [
+          { text: '🏢 خصوصی', callback_data: 'wizard_worktype_private' },
+          { text: '💻 فریلنسر', callback_data: 'wizard_worktype_freelancer' }
+        ],
+        [
+          { text: '🎓 دانشجو', callback_data: 'wizard_worktype_student' },
+          { text: '📚 معلم', callback_data: 'wizard_worktype_teacher' }
+        ],
+        [
+          { text: '⚕️ پزشک', callback_data: 'wizard_worktype_doctor' },
+          { text: '🎨 هنرمند', callback_data: 'wizard_worktype_artist' }
+        ],
+        [
+          { text: '🚀 کارآفرین', callback_data: 'wizard_worktype_entrepreneur' },
+          { text: '💼 تاجر', callback_data: 'wizard_worktype_merchant' }
+        ],
+        [
+          { text: '📊 بازاری', callback_data: 'wizard_worktype_marketer' },
+          { text: '🏗️ معمار', callback_data: 'wizard_worktype_architect' }
+        ],
+        [
+          { text: '💎 طلا فروش', callback_data: 'wizard_worktype_goldsmith' },
+          { text: '🔷 سایر', callback_data: 'wizard_worktype_other' }
+        ]
+      ]
+    }
 
     await this.bot.sendMessage(chatId, message, {
       parse_mode: 'Markdown',
@@ -1220,6 +1324,28 @@ ${selectedInterests.length > 0 ? `*انتخاب شده:* ${selectedInterests.map
         })
 
         await this.showWizardStep(userId, chatId, 'interests')
+      } else if (data === 'wizard_interests_next') {
+        if (wizardState.data.interests.length === 0) {
+          await this.bot.answerCallbackQuery(query.id, {
+            text: '⚠️ لطفاً حداقل یک ذائقه بویایی انتخاب کنید',
+            show_alert: true
+          })
+          return
+        }
+        
+        wizardState.step = 'workType'
+        await this.bot.answerCallbackQuery(query.id, {
+          text: '✅ در حال انتقال...',
+          show_alert: false
+        })
+
+        await this.bot.editMessageText('✅ *ذائقه بویایی انتخاب شد*\n\nدر حال انتقال به مرحله بعد...', {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown'
+        })
+
+        await this.showWizardStep(userId, chatId, 'workType')
       } else if (data.startsWith('wizard_interest_')) {
         const interestId = data.replace('wizard_interest_', '')
         const interests = wizardState.data.interests || []
@@ -1228,14 +1354,14 @@ ${selectedInterests.length > 0 ? `*انتخاب شده:* ${selectedInterests.map
           // Remove interest
           wizardState.data.interests = interests.filter(i => i !== interestId)
           await this.bot.answerCallbackQuery(query.id, {
-            text: '✅ علاقه‌مندی حذف شد',
+            text: '✅ ذائقه بویایی حذف شد',
             show_alert: false
           })
         } else {
           // Add interest
           wizardState.data.interests.push(interestId)
           await this.bot.answerCallbackQuery(query.id, {
-            text: '✅ علاقه‌مندی اضافه شد',
+            text: '✅ ذائقه بویایی اضافه شد',
             show_alert: false
           })
         }
@@ -1243,15 +1369,43 @@ ${selectedInterests.length > 0 ? `*انتخاب شده:* ${selectedInterests.map
         // Update the message
         await this.showInterestsStep(chatId, wizardState.data.interests)
         await this.bot.deleteMessage(chatId, messageId)
-      } else if (data === 'wizard_complete') {
-        if (wizardState.data.interests.length === 0) {
-          await this.bot.answerCallbackQuery(query.id, {
-            text: '⚠️ لطفاً حداقل یک علاقه‌مندی انتخاب کنید',
-            show_alert: true
-          })
-          return
+      } else if (data.startsWith('wizard_worktype_')) {
+        const workType = data.replace('wizard_worktype_', '')
+        const workTypeNames = {
+          'athlete': '🏃 ورزشکار',
+          'manager': '👔 مدیر',
+          'employee': '💼 کارمند',
+          'government': '🏛️ دولتی',
+          'private': '🏢 خصوصی',
+          'freelancer': '💻 فریلنسر',
+          'student': '🎓 دانشجو',
+          'teacher': '📚 معلم',
+          'doctor': '⚕️ پزشک',
+          'artist': '🎨 هنرمند',
+          'entrepreneur': '🚀 کارآفرین',
+          'merchant': '💼 تاجر',
+          'marketer': '📊 بازاری',
+          'architect': '🏗️ معمار',
+          'goldsmith': '💎 طلا فروش',
+          'other': '🔷 سایر'
         }
+        wizardState.data.workType = workType
+        wizardState.step = 'complete'
+        
+        await this.bot.answerCallbackQuery(query.id, {
+          text: `✅ ${workTypeNames[workType]} انتخاب شد`,
+          show_alert: false
+        })
 
+        await this.bot.editMessageText('✅ *تیپ شخصیت کاری انتخاب شد*\n\nدر حال ذخیره اطلاعات...', {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown'
+        })
+
+        await this.completeWizard(userId, chatId, wizardState.data)
+        await this.bot.deleteMessage(chatId, messageId)
+      } else if (data === 'wizard_complete') {
         wizardState.step = 'complete'
         await this.bot.answerCallbackQuery(query.id, {
           text: '✅ در حال ذخیره...',
@@ -1286,27 +1440,52 @@ ${selectedInterests.length > 0 ? `*انتخاب شده:* ${selectedInterests.map
       }
 
       const interestNames = {
-        'sports': '⚽ ورزش',
-        'music': '🎵 موسیقی',
-        'travel': '✈️ سفر',
-        'art': '🎨 هنر',
-        'technology': '💻 تکنولوژی',
-        'nature': '🌳 طبیعت',
-        'fashion': '👗 مد و فشن',
-        'books': '📚 کتاب و مطالعه',
-        'cinema': '🎬 سینما و فیلم',
-        'cooking': '🍳 آشپزی'
+        'warm': '🔥 گرم',
+        'cool': '❄️ خنک',
+        'sweet': '🍯 شیرین',
+        'bitter': '☕ تلخ',
+        'spicy': '🌶️ تند',
+        'mild': '🌿 ملایم',
+        'woody': '🪵 چوبی',
+        'floral': '🌺 گلی',
+        'fresh': '🍃 تازه',
+        'oriental': '🕌 شرقی',
+        'citrus': '🍊 مرکبات',
+        'vanilla': '🌰 وانیلی'
       }
 
       let summaryMessage = `✨ *ویزارد پروفایل تکمیل شد!*\n\n`
       summaryMessage += `📋 *خلاصه اطلاعات شما:*\n\n`
       summaryMessage += `🔢 *سن:* ${wizardData.age} سال\n`
       summaryMessage += `👤 *جنسیت:* ${genderNames[wizardData.gender]}\n`
-      summaryMessage += `🎯 *علاقه‌مندی‌ها:*\n`
+      summaryMessage += `👃 *ذائقه بویایی:*\n`
       
       wizardData.interests.forEach(interestId => {
         summaryMessage += `   ${interestNames[interestId]}\n`
       })
+
+      const workTypeNames = {
+        'athlete': '🏃 ورزشکار',
+        'manager': '👔 مدیر',
+        'employee': '💼 کارمند',
+        'government': '🏛️ دولتی',
+        'private': '🏢 خصوصی',
+        'freelancer': '💻 فریلنسر',
+        'student': '🎓 دانشجو',
+        'teacher': '📚 معلم',
+        'doctor': '⚕️ پزشک',
+        'artist': '🎨 هنرمند',
+        'entrepreneur': '🚀 کارآفرین',
+        'merchant': '💼 تاجر',
+        'marketer': '📊 بازاری',
+        'architect': '🏗️ معمار',
+        'goldsmith': '💎 طلا فروش',
+        'other': '🔷 سایر'
+      }
+
+      if (wizardData.workType) {
+        summaryMessage += `\n💼 *تیپ شخصیت کاری:* ${workTypeNames[wizardData.workType]}\n`
+      }
 
       summaryMessage += `\n💫 حالا می‌تونم بهتر و دقیق‌تر عطر مناسب رو بهت پیشنهاد بدم!\n\n`
       summaryMessage += `بگو دنبال چه عطری هستی؟ 🌸`
