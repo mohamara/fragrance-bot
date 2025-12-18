@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import fs from 'fs-extra';
 import { config } from './config.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -8,7 +9,66 @@ const __dirname = dirname(__filename);
 
 class DatabaseManager {
   constructor() {
-    this.db = new Database(config.database.path);
+    // Ensure database directory exists and is writable
+    const dbPath = config.database.path;
+    const dbDir = dirname(dbPath);
+    
+    try {
+      // Create directory if it doesn't exist
+      fs.ensureDirSync(dbDir);
+      
+      // Set directory permissions (rwxr-xr-x)
+      try {
+        fs.chmodSync(dbDir, 0o755);
+      } catch (err) {
+        console.warn(`Warning: Could not set directory permissions: ${err.message}`);
+      }
+      
+      // Check if database file exists and is writable
+      if (fs.existsSync(dbPath)) {
+        try {
+          fs.accessSync(dbPath, fs.constants.W_OK);
+        } catch (err) {
+          console.error(`Database file is not writable: ${dbPath}`);
+          console.error(`Error: ${err.message}`);
+          // Try to fix permissions
+          try {
+            fs.chmodSync(dbPath, 0o664);
+            console.log(`Fixed database file permissions`);
+          } catch (chmodErr) {
+            console.error(`Could not fix permissions: ${chmodErr.message}`);
+            throw new Error(`Database file is not writable: ${err.message}`);
+          }
+        }
+      } else {
+        // File doesn't exist, will be created by SQLite
+        console.log(`Database file will be created at: ${dbPath}`);
+      }
+    } catch (err) {
+      console.error(`Error setting up database directory: ${err.message}`);
+      throw err;
+    }
+    
+    // Open database with WAL mode for better concurrency
+    try {
+      this.db = new Database(dbPath, {
+        verbose: process.env.NODE_ENV === 'development' ? console.log : null
+      });
+      
+      // Enable WAL mode for better concurrency
+      this.db.pragma('journal_mode = WAL');
+      
+      // Set file permissions after creation
+      try {
+        fs.chmodSync(dbPath, 0o664);
+      } catch (err) {
+        console.warn(`Warning: Could not set database file permissions: ${err.message}`);
+      }
+    } catch (err) {
+      console.error(`Error opening database: ${err.message}`);
+      throw err;
+    }
+    
     this.initDatabase();
   }
 

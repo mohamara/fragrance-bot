@@ -15,7 +15,7 @@ services:
       - DB_PATH=/app/data/chatbot.db
       - KNOWLEDGE_BASE_PATH=/app/knowledge_base
     volumes:
-      # Persist database
+      # Persist database (with proper permissions)
       - ./data:/app/data
       # Persist knowledge base (read-only mount)
       - ./knowledge_base:/app/knowledge_base:ro

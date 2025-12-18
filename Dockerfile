@@ -22,8 +22,8 @@ COPY . .
 # Stage نهایی - فقط runtime dependencies
 FROM node:20-alpine AS production
 
-# نصب sqlite runtime library (مورد نیاز برای better-sqlite3)
-RUN apk add --no-cache sqlite
+# نصب sqlite runtime library و su-exec (مورد نیاز برای better-sqlite3 و user switching)
+RUN apk add --no-cache sqlite su-exec
 
 # تنظیم working directory
 WORKDIR /app
@@ -38,15 +38,22 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/knowledge_base ./knowledge_base
 
+# کپی entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # ایجاد پوشه‌های مورد نیاز
 RUN mkdir -p /app/data
 
 # تنظیم کاربر غیر root برای امنیت
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
-    chown -R nodejs:nodejs /app
+    chown -R nodejs:nodejs /app && \
+    chmod -R 755 /app/data
 
-USER nodejs
+# Set entrypoint (runs as root to fix permissions, then switches to nodejs)
+# Note: USER directive is handled in entrypoint script
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Expose port (در صورت نیاز)
 # EXPOSE 3000
