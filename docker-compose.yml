@@ -9,7 +9,7 @@ services:
     container_name: ldora-ai-bot
     restart: unless-stopped
     env_file:
-      - online.env
+      - .env
     environment:
       # Override paths for Docker container
       - DB_PATH=/app/data/chatbot.db
