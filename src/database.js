@@ -270,7 +270,6 @@ class DatabaseManager {
     const profile = this.getProfile(userId);
     return profile?.preferences?.perfumes || [];
   }
-}
 
   close() {
     this.db.close();
