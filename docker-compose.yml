@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  ldora-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: ldora-ai-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Override paths for Docker container
+      - DB_PATH=/app/data/chatbot.db
+      - KNOWLEDGE_BASE_PATH=/app/knowledge_base
+    volumes:
+      # Persist database
+      - ./data:/app/data
+      # Persist knowledge base (read-only mount)
+      - ./knowledge_base:/app/knowledge_base:ro
+    # healthcheck
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+

@@ -1,0 +1,12 @@
+{
+  "watch": ["src", "knowledge_base"],
+  "ext": "js,json,txt",
+  "ignore": ["node_modules", "data", "*.log"],
+  "exec": "node src/index.js",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": 1000,
+  "verbose": true
+}
+

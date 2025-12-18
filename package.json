@@ -1,0 +1,33 @@
+{
+  "name": "ldora-ai-bot",
+  "version": "1.0.0",
+  "description": "AI Telegram Bot with LangChain, OpenAI, and Knowledge Base",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "langchain",
+    "openai",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@langchain/community": "^0.3.0",
+    "@langchain/core": "^0.3.0",
+    "@langchain/openai": "^0.3.0",
+    "better-sqlite3": "^11.0.0",
+    "dotenv": "^16.4.5",
+    "fs-extra": "^11.2.0",
+    "langchain": "^0.3.0",
+    "node-telegram-bot-api": "^0.66.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
