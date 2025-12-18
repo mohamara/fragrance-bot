@@ -12,16 +12,15 @@ class KnowledgeBase {
     try {
       const knowledgePath = config.knowledgeBase.path;
       const files = await fs.readdir(knowledgePath);
-      // Include .txt and .md files (text files with knowledge base content)
-      // Exclude README.md and other documentation files
+      // Only include .txt files (exclude .md and other files)
       const knowledgeFiles = files.filter(file => 
-        (file.endsWith('.txt') || file.endsWith('.md')) &&
+        file.endsWith('.txt') &&
         !file.toLowerCase().includes('readme') &&
         !file.toLowerCase().includes('example')
       );
 
       if (knowledgeFiles.length === 0) {
-        console.log('No knowledge base files (.txt or .md) found in knowledge base directory');
+        console.log('No .txt files found in knowledge base directory');
         return;
       }
 
@@ -51,7 +50,7 @@ class KnowledgeBase {
       fileStats.forEach(stat => {
         console.log(`   ✓ ${stat.name}: ${stat.size} KB`);
       });
-      console.log(`   ✅ Total: ${(this.allContent.length / 1024).toFixed(2)} KB from ${knowledgeFiles.length} file(s)`);
+      console.log(`   ✅ Total: ${(this.allContent.length / 1024).toFixed(2)} KB from ${knowledgeFiles.length} .txt file(s)`);
       console.log(`📚 Knowledge base loaded successfully! All content is available for AI.`);
     } catch (error) {
       console.error('Error loading knowledge base:', error);
