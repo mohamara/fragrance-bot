@@ -23,14 +23,12 @@ class AIService {
       // Get chat history
       const chatHistory = database.getChatHistory(userId, 10);
       
-      // Search knowledge base for relevant information (intelligent two-stage search)
+      // Get all knowledge base content (all .txt files)
       let knowledgeContext = '';
       if (knowledgeBase.isLoaded()) {
-        // Search for more perfumes (up to 5) to have better coverage
-        const relevantDocs = await knowledgeBase.search(userMessage, 5);
-        if (relevantDocs.length > 0) {
-          knowledgeContext = '\n\n📚 عطرهای مرتبط از پایگاه دانش:\n' + 
-            relevantDocs.join('\n\n---\n\n');
+        const allContent = knowledgeBase.getAllContent();
+        if (allContent && allContent.length > 0) {
+          knowledgeContext = `\n\n📚 پایگاه دانش کامل - تمام اطلاعات عطرهای موجود:\n${allContent}\n`;
         }
       }
 
