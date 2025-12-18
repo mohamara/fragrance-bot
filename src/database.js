@@ -210,6 +210,68 @@ class DatabaseManager {
     stmt.run(context, userId);
   }
 
+  // Add perfume to user's collection
+  addUserPerfume(userId, perfumeName) {
+    const profile = this.getProfile(userId);
+    const preferences = profile?.preferences || {};
+    const perfumes = preferences.perfumes || [];
+    
+    // Add perfume if not already exists
+    if (!perfumes.includes(perfumeName)) {
+      perfumes.push(perfumeName);
+      preferences.perfumes = perfumes;
+      
+      const stmt = this.db.prepare(`
+        INSERT INTO user_profiles (user_id, preferences, context, metadata, updated_at)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(user_id) DO UPDATE SET
+          preferences = excluded.preferences,
+          updated_at = CURRENT_TIMESTAMP
+      `);
+      
+      const existingProfile = this.getProfile(userId);
+      stmt.run(
+        userId,
+        JSON.stringify(preferences),
+        existingProfile?.context || '',
+        JSON.stringify(existingProfile?.metadata || {})
+      );
+      
+      return true;
+    }
+    return false;
+  }
+
+  // Remove perfume from user's collection
+  removeUserPerfume(userId, perfumeName) {
+    const profile = this.getProfile(userId);
+    const preferences = profile?.preferences || {};
+    const perfumes = preferences.perfumes || [];
+    
+    const index = perfumes.indexOf(perfumeName);
+    if (index > -1) {
+      perfumes.splice(index, 1);
+      preferences.perfumes = perfumes;
+      
+      const stmt = this.db.prepare(`
+        UPDATE user_profiles
+        SET preferences = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ?
+      `);
+      
+      stmt.run(JSON.stringify(preferences), userId);
+      return true;
+    }
+    return false;
+  }
+
+  // Get user's perfumes
+  getUserPerfumes(userId) {
+    const profile = this.getProfile(userId);
+    return profile?.preferences?.perfumes || [];
+  }
+}
+
   close() {
     this.db.close();
   }

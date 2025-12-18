@@ -2,6 +2,7 @@ import TelegramBot from "node-telegram-bot-api"
 import { config } from "./config.js"
 import database from "./database.js"
 import aiService from "./aiService.js"
+import knowledgeBase from "./knowledgeBase.js"
 
 class TelegramBotService {
   constructor() {
@@ -114,48 +115,50 @@ class TelegramBotService {
         })
       }
 
-      const welcomeMessage = `سلام ${userData.first_name || "عزیز"}! 🌸
+      const welcomeMessage = `سلام *${userData.first_name || "عزیز"}*! 🌸
 
-من مشاور تخصصی عطر و اسانس شما هستم. با طبعی شاعرانه و دانش عمیق در دنیای عطرها، اینجا هستم تا بهت کمک کنم عطر رویایی‌ات رو پیدا کنی یا ترکیبی منحصر به فرد بسازی.
+من *مشاور تخصصی عطر و اسانس* شما هستم. با طبعی شاعرانه و دانش عمیق در دنیای عطرها، اینجا هستم تا بهت کمک کنم عطر رویایی‌ات رو پیدا کنی یا ترکیبی منحصر به فرد بسازی.
 
-من می‌تونم:
+*من می‌تونم:*
 ✨ بر اساس شخصیت و سبک زندگی‌ت عطر مناسب رو پیشنهاد بدم
 🌹 ترکیب‌های خلاقانه از عطرهای موجود رو بهت یاد بدم
 💫 با توصیفات شاعرانه و عمیق، حال و هوای هر عطر رو برات زنده کنم
 🎯 زمانبندی و نقاط دقیق زدن عطر رو بهت بگم
 
-دستورات:
-/help - راهنمای کامل
-/clear - شروع یک مشاوره جدید (پاک کردن تاریخچه)
-/profile - اطلاعات پروفایل
+*دستورات:*
+\`/help\` - راهنمای کامل
+\`/clear\` - شروع یک مشاوره جدید (پاک کردن تاریخچه)
+\`/profile\` - اطلاعات پروفایل
+\`/myperfumes\` - مدیریت عطرهای من
 
 حالا بگو، دنبال چه عطری هستی؟ یا می‌خوای ترکیبی خاص بسازی؟ 💭`
 
-      await this.bot.sendMessage(msg.chat.id, welcomeMessage)
+      await this.sendFormattedMessage(msg.chat.id, welcomeMessage)
     })
 
     // Help command
     this.bot.onText(/\/help/, async (msg) => {
       this.logMessage(msg, "command: /help")
-      const helpMessage = `🌹 راهنمای مشاور عطر
+      const helpMessage = `🌹 *راهنمای مشاور عطر*
 
-دستورات:
-/start - شروع مشاوره
-/help - این راهنما
-/clear - شروع مشاوره جدید (پاک کردن تاریخچه)
-/profile - اطلاعات پروفایل شما
+*دستورات:*
+\`/start\` - شروع مشاوره
+\`/help\` - این راهنما
+\`/clear\` - شروع مشاوره جدید (پاک کردن تاریخچه)
+\`/profile\` - اطلاعات پروفایل شما
+\`/myperfumes\` - مدیریت عطرهای من
 
-نحوه استفاده:
+*نحوه استفاده:*
 فقط بگو دنبال چه عطری هستی یا چه سوالی داری! من:
-- از مجموعه عطرهای موجود استفاده می‌کنم
-- سوالات دقیق می‌پرسم تا بهترین پیشنهاد رو بدم
-- ترکیب‌های خلاقانه بهت یاد می‌دم
-- با توصیفات شاعرانه و عمیق، حال و هوای عطرها رو برات زنده می‌کنم
-- زمانبندی و نقاط دقیق زدن عطر رو بهت می‌گم
+• از مجموعه عطرهای موجود استفاده می‌کنم
+• سوالات دقیق می‌پرسم تا بهترین پیشنهاد رو بدم
+• ترکیب‌های خلاقانه بهت یاد می‌دم
+• با توصیفات شاعرانه و عمیق، حال و هوای عطرها رو برات زنده می‌کنم
+• زمانبندی و نقاط دقیق زدن عطر رو بهت می‌گم
 
 بیا شروع کنیم! 💫`
 
-      await this.bot.sendMessage(msg.chat.id, helpMessage)
+      await this.sendFormattedMessage(msg.chat.id, helpMessage)
     })
 
     // Clear chat history
@@ -163,7 +166,7 @@ class TelegramBotService {
       this.logMessage(msg, "command: /clear")
       const userId = msg.from.id
       database.clearChatHistory(userId)
-      await this.bot.sendMessage(msg.chat.id, "✨ تاریخچه پاک شد. آماده‌ام برای یک مشاوره جدید! بگو دنبال چه عطری هستی؟ 🌸")
+      await this.sendFormattedMessage(msg.chat.id, "✨ *تاریخچه پاک شد*\n\nآماده‌ام برای یک مشاوره جدید! بگو دنبال چه عطری هستی؟ 🌸")
     })
 
     // Profile command
@@ -174,17 +177,27 @@ class TelegramBotService {
       const profile = database.getProfile(userId)
       const chatHistory = database.getChatHistory(userId)
 
-      let profileMessage = `👤 پروفایل مشاوره شما:\n\n`
-      profileMessage += `🌸 نام: ${user?.first_name || "عزیز"} ${user?.last_name || ""}\n`
-      profileMessage += `💬 تعداد گفتگوها: ${chatHistory.length}\n`
+      const userPerfumes = database.getUserPerfumes(userId)
+      
+      let profileMessage = `👤 *پروفایل مشاوره شما:*\n\n`
+      profileMessage += `🌸 *نام:* ${user?.first_name || "عزیز"} ${user?.last_name || ""}\n`
+      profileMessage += `💬 *تعداد گفتگوها:* ${chatHistory.length}\n`
 
-      if (profile?.context) {
-        profileMessage += `\n📌 اطلاعات ذخیره شده: ${profile.context}\n`
+      if (userPerfumes.length > 0) {
+        profileMessage += `\n🌹 *عطرهای من:*\n`
+        userPerfumes.forEach((perfume, index) => {
+          profileMessage += `${index + 1}. **${perfume}**\n`
+        })
       }
 
-      profileMessage += `\n💡 می‌خوای یک مشاوره جدید شروع کنیم؟ فقط بگو دنبال چه عطری هستی!`
+      if (profile?.context) {
+        profileMessage += `\n📌 *اطلاعات ذخیره شده:*\n${profile.context}\n`
+      }
 
-      await this.bot.sendMessage(msg.chat.id, profileMessage)
+      profileMessage += `\n💡 می‌خوای یک مشاوره جدید شروع کنیم؟ فقط بگو دنبال چه عطری هستی!\n`
+      profileMessage += `\`/myperfumes\` - مدیریت عطرهای من`
+
+      await this.sendFormattedMessage(msg.chat.id, profileMessage)
     })
 
     // Set context command
@@ -194,7 +207,124 @@ class TelegramBotService {
       const context = match[1]
 
       aiService.updateUserContext(userId, context)
-      await this.bot.sendMessage(msg.chat.id, `✨ اطلاعات ذخیره شد:\n${context}\n\nحالا می‌تونم بهتر بهت مشاوره بدم! 🌸`)
+      await this.sendFormattedMessage(msg.chat.id, `✨ *اطلاعات ذخیره شد:*\n${context}\n\nحالا می‌تونم بهتر بهت مشاوره بدم! 🌸`)
+    })
+
+    // My perfumes command - show inline keyboard to select perfumes
+    this.bot.onText(/\/myperfumes/, async (msg) => {
+      this.logMessage(msg, "command: /myperfumes")
+      const userId = msg.from.id
+      
+      // Get user's current perfumes
+      const userPerfumes = database.getUserPerfumes(userId)
+      
+      // Get all available perfumes
+      const allPerfumes = knowledgeBase.getPerfumeTitles()
+      
+      if (allPerfumes.length === 0) {
+        await this.sendFormattedMessage(msg.chat.id, "❌ *خطا*\n\nفایل لیست عطرها پیدا نشد.")
+        return
+      }
+
+      // Create inline keyboard with perfume buttons
+      const keyboard = this.createPerfumeKeyboard(allPerfumes, userPerfumes)
+      
+      let message = `🌸 *عطرهای من*\n\n`
+      if (userPerfumes.length > 0) {
+        message += `*عطرهای انتخاب شده:*\n`
+        userPerfumes.forEach((perfume, index) => {
+          message += `${index + 1}. **${perfume}**\n`
+        })
+        message += `\n`
+      } else {
+        message += `هنوز عطری انتخاب نکردی.\n\n`
+      }
+      message += `برای اضافه یا حذف کردن عطر، دکمه مربوطه رو بزن:`
+
+      await this.bot.sendMessage(msg.chat.id, message, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: keyboard
+        }
+      })
+    })
+
+    // Handle callback queries (button clicks)
+    this.bot.on('callback_query', async (query) => {
+      const userId = query.from.id
+      const chatId = query.message.chat.id
+      const data = query.data
+      const messageId = query.message.message_id
+
+      this.logMessage(query, "callback_query")
+
+      // Handle perfume selection/deselection
+      if (data.startsWith('perfume_')) {
+        const action = data.split('_')[1] // 'add' or 'remove'
+        const perfumeName = data.substring(data.indexOf('_', data.indexOf('_') + 1) + 1) // Extract perfume name
+
+        try {
+          if (action === 'add') {
+            const added = database.addUserPerfume(userId, perfumeName)
+            if (added) {
+              await this.bot.answerCallbackQuery(query.id, {
+                text: `✅ ${perfumeName} اضافه شد`,
+                show_alert: false
+              })
+            } else {
+              await this.bot.answerCallbackQuery(query.id, {
+                text: `⚠️ این عطر قبلاً اضافه شده`,
+                show_alert: false
+              })
+            }
+          } else if (action === 'remove') {
+            const removed = database.removeUserPerfume(userId, perfumeName)
+            if (removed) {
+              await this.bot.answerCallbackQuery(query.id, {
+                text: `✅ ${perfumeName} حذف شد`,
+                show_alert: false
+              })
+            } else {
+              await this.bot.answerCallbackQuery(query.id, {
+                text: `⚠️ این عطر در لیست شما نیست`,
+                show_alert: false
+              })
+            }
+          }
+
+          // Update the message with new keyboard state
+          const userPerfumes = database.getUserPerfumes(userId)
+          const allPerfumes = knowledgeBase.getPerfumeTitles()
+          const keyboard = this.createPerfumeKeyboard(allPerfumes, userPerfumes)
+
+          let message = `🌸 *عطرهای من*\n\n`
+          if (userPerfumes.length > 0) {
+            message += `*عطرهای انتخاب شده:*\n`
+            userPerfumes.forEach((perfume, index) => {
+              message += `${index + 1}. **${perfume}**\n`
+            })
+            message += `\n`
+          } else {
+            message += `هنوز عطری انتخاب نکردی.\n\n`
+          }
+          message += `برای اضافه یا حذف کردن عطر، دکمه مربوطه رو بزن:`
+
+          await this.bot.editMessageText(message, {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: keyboard
+            }
+          })
+        } catch (error) {
+          console.error('Error handling callback query:', error)
+          await this.bot.answerCallbackQuery(query.id, {
+            text: '❌ خطا در پردازش',
+            show_alert: false
+          })
+        }
+      }
     })
 
     // Handle all text messages
@@ -251,14 +381,14 @@ class TelegramBotService {
         const responsePreview = response.length > 100 ? response.substring(0, 100) + "..." : response
         console.log(`   🤖 Response generated: ${responsePreview}`)
 
-        // Send response
-        await this.bot.sendMessage(msg.chat.id, response)
+        // Send response with Markdown formatting
+        await this.sendFormattedMessage(msg.chat.id, response)
         console.log("   ✅ Response sent")
       } catch (error) {
         console.error("❌ Error processing message:", error)
         console.error("   Stack:", error.stack)
         try {
-          await this.bot.sendMessage(msg.chat.id, "❌ متأسفانه خطایی رخ داد. لطفاً دوباره تلاش کنید.")
+          await this.sendFormattedMessage(msg.chat.id, "❌ *متأسفانه خطایی رخ داد*\n\nلطفاً دوباره تلاش کنید.")
         } catch (sendError) {
           console.error("❌ Error sending error message:", sendError)
         }
@@ -299,8 +429,129 @@ class TelegramBotService {
     }
   }
 
+  async sendFormattedMessage(chatId, text) {
+    // Telegram has a limit of 4096 characters per message
+    const MAX_MESSAGE_LENGTH = 4000 // Leave some buffer
+    
+    if (text.length <= MAX_MESSAGE_LENGTH) {
+      // Send as single message with Markdown
+      try {
+        return await this.bot.sendMessage(chatId, text, {
+          parse_mode: 'Markdown',
+          disable_web_page_preview: true
+        })
+      } catch (error) {
+        // If Markdown parsing fails, send as plain text
+        console.warn('   ⚠️  Markdown parsing failed, sending as plain text:', error.message)
+        return await this.bot.sendMessage(chatId, text, {
+          disable_web_page_preview: true
+        })
+      }
+    } else {
+      // Split long messages into multiple parts
+      const parts = this.splitMessage(text, MAX_MESSAGE_LENGTH)
+      
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i]
+        const partText = parts.length > 1 
+          ? `*[قسمت ${i + 1} از ${parts.length}]*\n\n${part}`
+          : part
+        
+        try {
+          await this.bot.sendMessage(chatId, partText, {
+            parse_mode: 'Markdown',
+            disable_web_page_preview: true
+          })
+        } catch (error) {
+          // If Markdown parsing fails, send as plain text
+          console.warn(`   ⚠️  Markdown parsing failed for part ${i + 1}, sending as plain text:`, error.message)
+          await this.bot.sendMessage(chatId, part, {
+            disable_web_page_preview: true
+          })
+        }
+        
+        // Small delay between messages
+        if (i < parts.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 300))
+        }
+      }
+    }
+  }
+
+  splitMessage(text, maxLength) {
+    const parts = []
+    const paragraphs = text.split('\n\n')
+    let currentPart = ''
+    
+    for (const paragraph of paragraphs) {
+      if ((currentPart + paragraph + '\n\n').length > maxLength) {
+        if (currentPart) {
+          parts.push(currentPart.trim())
+          currentPart = paragraph + '\n\n'
+        } else {
+          // Single paragraph is too long, split by sentences
+          const sentences = paragraph.split(/[.!?]\s+/)
+          for (const sentence of sentences) {
+            if ((currentPart + sentence + '. ').length > maxLength) {
+              if (currentPart) {
+                parts.push(currentPart.trim())
+                currentPart = sentence + '. '
+              } else {
+                // Even single sentence is too long, split by words
+                const words = sentence.split(' ')
+                for (const word of words) {
+                  if ((currentPart + word + ' ').length > maxLength) {
+                    if (currentPart) {
+                      parts.push(currentPart.trim())
+                    }
+                    currentPart = word + ' '
+                  } else {
+                    currentPart += word + ' '
+                  }
+                }
+              }
+            } else {
+              currentPart += sentence + '. '
+            }
+          }
+        }
+      } else {
+        currentPart += paragraph + '\n\n'
+      }
+    }
+    
+    if (currentPart.trim()) {
+      parts.push(currentPart.trim())
+    }
+    
+    return parts.length > 0 ? parts : [text]
+  }
+
+  createPerfumeKeyboard(allPerfumes, userPerfumes) {
+    const keyboard = []
+    const buttonsPerRow = 2 // 2 buttons per row
+    
+    for (let i = 0; i < allPerfumes.length; i += buttonsPerRow) {
+      const row = []
+      for (let j = 0; j < buttonsPerRow && i + j < allPerfumes.length; j++) {
+        const perfume = allPerfumes[i + j]
+        const isSelected = userPerfumes.includes(perfume)
+        const emoji = isSelected ? '✅' : '➕'
+        const action = isSelected ? 'remove' : 'add'
+        
+        row.push({
+          text: `${emoji} ${perfume}`,
+          callback_data: `perfume_${action}_${perfume}`
+        })
+      }
+      keyboard.push(row)
+    }
+    
+    return keyboard
+  }
+
   async sendMessage(chatId, text) {
-    return await this.bot.sendMessage(chatId, text)
+    return await this.sendFormattedMessage(chatId, text)
   }
 }
 

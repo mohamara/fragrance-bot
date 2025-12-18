@@ -85,6 +85,28 @@ class KnowledgeBase {
       files: Array.from(this.fileContents.keys())
     };
   }
+
+  // Get list of perfume titles from titles.txt
+  getPerfumeTitles() {
+    try {
+      const titlesPath = join(config.knowledgeBase.path, 'titles.txt');
+      if (!fs.existsSync(titlesPath)) {
+        console.warn('titles.txt file not found');
+        return [];
+      }
+      
+      const content = fs.readFileSync(titlesPath, 'utf-8');
+      const titles = content
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+      
+      return titles;
+    } catch (error) {
+      console.error('Error reading perfume titles:', error);
+      return [];
+    }
+  }
 }
 
 export default new KnowledgeBase();
